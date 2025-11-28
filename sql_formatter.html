@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Formatter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .editor-section {
+            margin-bottom: 30px;
+        }
+
+        .editor-label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-format {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-format:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+
+        .btn-copy {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .example-sql {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .example-sql h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .example-sql code {
+            display: block;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .example-sql code:hover {
+            background: #e8eaf6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 SQL Formatter</h1>
+            <p>Định dạng câu lệnh SQL của bạn một cách dễ dàng</p>
+        </div>
+
+        <div class="content">
+            <div class="example-sql">
+                <h3>Ví dụ (Click để sử dụng):</h3>
+                <code onclick="useExample(this)">SELECT id,name,email FROM users WHERE status=1 AND created_at>'2024-01-01' ORDER BY name</code>
+            </div>
+
+            <div class="editor-section">
+                <label class="editor-label">📝 Nhập câu SQL:</label>
+                <textarea id="inputSql" placeholder="Nhập câu lệnh SQL của bạn vào đây...&#10;Ví dụ: select * from users where id=1"></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-format" onclick="formatSql()">
+                    ✨ Format SQL
+                </button>
+                <button class="btn-clear" onclick="clearAll()">
+                    🗑️ Xóa tất cả
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px;">Đang xử lý...</p>
+            </div>
+
+            <div class="status" id="status"></div>
+
+            <div class="editor-section" id="outputSection" style="display: none;">
+                <label class="editor-label">✅ Kết quả:</label>
+                <textarea id="outputSql" readonly></textarea>
+                <button class="btn-copy" onclick="copySql()" style="margin-top: 10px;">
+                    📋 Copy kết quả
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function useExample(element) {
+            document.getElementById('inputSql').value = element.textContent;
+            showStatus('Đã tải ví dụ! Nhấn "Format SQL" để định dạng.', 'info');
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        async function formatSql() {
+            const inputSql = document.getElementById('inputSql').value.trim();
+            
+            if (!inputSql) {
+                showStatus('❌ Vui lòng nhập câu SQL cần format!', 'error');
+                return;
+            }
+
+            showLoading(true);
+            document.getElementById('status').style.display = 'none';
+            
+            try {
+                const formData = new URLSearchParams();
+                formData.append('rqst_input_sql', inputSql);
+
+                const response = await fetch('http://www.gudusoft.com/format.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Lỗi kết nối đến server');
+                }
+
+                const data = await response.json();
+                
+                if (data.rspn_parse_sql_status === 0) {
+                    document.getElementById('outputSql').value = data.rspn_formatted_sql;
+                    document.getElementById('outputSection').style.display = 'block';
+                    showStatus('✅ Format thành công!', 'success');
+                } else {
+                    showStatus('❌ Lỗi: ' + (data.rspn_parse_sql_message || 'Không thể phân tích câu SQL'), 'error');
+                    document.getElementById('outputSection').style.display = 'none';
+                }
+            } catch (error) {
+                showStatus('❌ Lỗi: ' + error.message + '. Có thể do CORS policy, vui lòng kiểm tra console.', 'error');
+                console.error('Chi tiết lỗi:', error);
+                document.getElementById('outputSection').style.display = 'none';
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('inputSql').value = '';
+            document.getElementById('outputSql').value = '';
+            document.getElementById('outputSection').style.display = 'none';
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function copySql() {
+            const output = document.getElementById('outputSql');
+            output.select();
+            document.execCommand('copy');
+            showStatus('✅ Đã copy vào clipboard!', 'success');
+        }
+
+        // Cho phép format bằng Ctrl+Enter
+        document.getElementById('inputSql').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                formatSql();
+            }
+        });
+    </script>
+</body>
+</html>
